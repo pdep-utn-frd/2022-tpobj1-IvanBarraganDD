@@ -7,4 +7,4 @@ program dino {
 	juego.iniciar()
 	game.start()
 
-}
+}   

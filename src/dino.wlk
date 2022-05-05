@@ -11,18 +11,33 @@ object juego{
 		game.addVisual(suelo)
 		game.addVisual(cactus)
 		game.addVisual(dino)
-		game.addVisual(reloj)
+		game.addVisual(banana)
+		//game.addVisual(reloj)
+		game.addVisual(sol)
+		game.boardGround("rio-del-bosque.jpg")
+		
 	
 		keyboard.space().onPressDo{ self.jugar()}
-		
+		keyboard.s().onPressDo{self.bananacomida()}
 		game.onCollideDo(dino,{ obstaculo => obstaculo.chocar()})
+		game.onCollideDo(dino,{ banana => banana.comida() })
 		
 	} 
 	
-	method    iniciar(){
+	method iniciar(){
 		dino.iniciar()
-		reloj.iniciar()
+		//reloj.iniciar()
 		cactus.iniciar()
+		banana.iniciar()
+	
+	}
+	method bananacomida(){
+		if (dino.estaVivo()) 
+			dino.supersalto()
+		else {
+			game.removeVisual(gameOver)
+			self.iniciar()
+		}
 	}
 	
 	method jugar(){
@@ -38,8 +53,9 @@ object juego{
 	method terminar(){
 		game.addVisual(gameOver)
 		cactus.detener()
-		reloj.detener()
+		//reloj.detener()
 		dino.morir()
+		banana.detener()
 	}
 	
 }
@@ -51,7 +67,7 @@ object gameOver {
 
 }
 
-object reloj {
+/* object reloj {
 	
 	var tiempo = 0
 	
@@ -68,6 +84,10 @@ object reloj {
 	method detener(){
 		game.removeTickEvent("tiempo")
 	}
+} */
+object sol {
+	method image () = "sol-removebg-preview.png"
+	method position() = game.at(1, game.height()-2)
 }
 
 object cactus {
@@ -75,7 +95,7 @@ object cactus {
 	const posicionInicial = game.at(game.width()-1,suelo.position().y())
 	var position = posicionInicial
 
-	method image() = "cactus.png"
+	method image() = "gorila_animado-removebg-preview.png"
 	method position() = position
 	
 	method iniciar(){
@@ -88,7 +108,7 @@ object cactus {
 		if (position.x() == -1)
 			position = posicionInicial
 	}
-	
+	method comida(){}
 	method chocar(){
 		juego.terminar()
 	}
@@ -99,7 +119,7 @@ object cactus {
 
 object suelo{
 	
-	method position() = game.origin().up(1)
+	method position() = game.origin().up(0)
 	
 	method image() = "suelo.png"
 }
@@ -109,7 +129,7 @@ object dino {
 	var vivo = true
 	var position = game.at(1,suelo.position().y())
 	
-	method image() = "dino.png"
+	method image() = "tarzan-removebg-preview.png"
 	method position() = position
 	
 	method saltar(){
@@ -118,11 +138,25 @@ object dino {
 			game.schedule(velocidad*3,{self.bajar()})
 		}
 	}
+	/*method comibanana(){
+		if ()
+	}*/
+	method supersalto(){
+		if(position.y() == suelo.position().y()) {
+			self.supersubir()
+			game.schedule(velocidad*3,{self.superbajar()})
+	}
+	}
 	
+	method supersubir (){
+		position = position.up(3)
+	}
 	method subir(){
 		position = position.up(1)
 	}
-	
+	method superbajar(){
+		position = position.down(3)
+	}
 	method bajar(){
 		position = position.down(1)
 	}
@@ -134,6 +168,36 @@ object dino {
 		vivo = true
 	}
 	method estaVivo() {
-		return vivo
+		return vivo 
+	}
+}
+object banana{
+	var comerla = false
+	const posicionInicial = game.at(0.randomUpTo(24).truncate(0),suelo.position().y())
+	var position = posicionInicial
+
+	method image() = "bananass-removebg-preview.png"
+	method position() = position
+	 
+	method iniciar(){
+		position = posicionInicial
+		game.onTick(velocidad,"moverBanana",{self.mover()})
+	}
+	
+	method mover(){
+		position = position.left(1)
+		if (position.x() == -1)
+			position = posicionInicial
+	}
+	method comida(){
+		juego.bananacomida()     
+	}
+	method chocar(){
+		game.say(self,"Que rico")
+		comerla = true
+	}
+
+	 method detener(){
+		game.removeTickEvent("moverBanana")
 	}
 }
